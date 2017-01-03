@@ -16,6 +16,9 @@ msgstr ""
 #strings 30000 thru 30999 reserved for plugins and plugin settings
 
 msgctxt "#30000"
-msgid "General"
+msgid "download current item"
 msgstr ""
 
+msgctxt "#30001"
+msgid "eteatru.ro"
+msgstr ""
