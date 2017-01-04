@@ -6,8 +6,7 @@ import re
 addon = xbmcaddon.Addon('plugin.audio.eteatru')
 
 def addon_log(string):
-  #DEBUG = addon.getSetting('debug')
-  DEBUG = 'true'
+  DEBUG = addon.getSetting('debug')
   ADDON_VERSION = addon.getAddonInfo('version')
   if DEBUG == 'true':
     if isinstance(string, unicode):

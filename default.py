@@ -71,7 +71,7 @@ def addDir(name, mode):
   return ok
 
 def catList():
-  addDir('Current', 1)
+  addDir(addon.getLocalizedString(30005), 1)
   #addDir('Favorites', 3)
     
   xbmc.executebuiltin("Container.SetViewMode(51)")
@@ -99,8 +99,7 @@ def downloadItem(params):
   url = params['url']
   url = urllib.unquote_plus(url)
   
-  dest = '/tmp/'
-  dest = dest+ntpath.basename(url)
+  dest = os.path.join(addon.getSetting('download_path'), ntpath.basename(url))
   
   try: 
     Downloader(url, dest, addon.getLocalizedString(30000), addon.getLocalizedString(30001))
@@ -125,7 +124,6 @@ elif mode==1:
   listCurrent()
 elif mode==2:
   downloadItem(params)
-  #playCurrent(params)
 #elif mode==3:
 #  pass
 

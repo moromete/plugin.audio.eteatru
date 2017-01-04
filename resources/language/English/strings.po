@@ -22,3 +22,19 @@ msgstr ""
 msgctxt "#30001"
 msgid "eteatru.ro"
 msgstr ""
+
+msgctxt "#30002"
+msgid "General"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Debug"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Download path"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Current playing"
+msgstr ""
