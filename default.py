@@ -3,8 +3,9 @@ import urllib
 import os, os.path
 import json, re
 import ntpath
+import HTMLParser
 
-from glob import addon_log, addon, Downloader, cleanJson
+from glob import addon_log, addon, Downloader, cleanJson, message
 from player import player
 
 def listCurrent():
@@ -27,8 +28,11 @@ def listCurrent():
   try:
     playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
     name = playInfo[0][1]
+    pars = HTMLParser.HTMLParser()
+    name = pars.unescape(name)
     name = name.encode('utf8')
     comment = playInfo[0][2]
+    comment = pars.unescape(comment)
     comment = re.sub('<[^<]+?>', '', comment)
     comment = comment.encode('utf8')
     url = playInfo[0][3]
@@ -45,11 +49,6 @@ def listCurrent():
   contextMenuItems = [( 'Download', "XBMC.RunPlugin("+u+")", )]
   listitem.addContextMenuItems(contextMenuItems)
   
-  #"&mode=2"+\
-  #u=plugin+"?url="+urllib.quote_plus(url)+\
-  #         "&name="+urllib.quote_plus(name)+\
-  #         "&offset="+urllib.quote_plus(offset)
-  
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
   xbmc.executebuiltin("Container.SetViewMode(51)")
   
@@ -57,24 +56,28 @@ def listCurrent():
 #  p = player(xbmc.PLAYER_CORE_AUTO, offset=int(playInfo[0][6]))
 #  p.play(playInfo[0][3], listitem)
   
-def addDir(name, mode):
+def addDir(name, mode, params=None):
   contextMenuItems = []
 
   plugin=sys.argv[0]
 
-  u = plugin+"?"+"mode="+str(mode) + \
-      "&name="+urllib.quote_plus(name)
-  ok = True
-
-  liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png",thumbnailImage="")
+  u = plugin+"?"+"mode="+str(mode)
+  if(params!=None):
+    for param in params:
+      u = u + '&' + param['name'] + '=' + param['value']  
+    
+  liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png")
   liz.setInfo( type="Audio", infoLabels={ "Title": name })
-  ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
-  return ok
+  xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
 
 def catList():
   addDir(addon.getLocalizedString(30005), 1)
   addDir(addon.getLocalizedString(30006), 3)
-  #addDir('Favorites', 3)
+  
+  #Downloads
+  if(addon.getSetting('download_path')!=''):
+    liz = xbmcgui.ListItem(addon.getLocalizedString(30008), iconImage="DefaultFolder.png")
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=addon.getSetting('download_path'), listitem=liz, isFolder=True)
     
   xbmc.executebuiltin("Container.SetViewMode(51)")
 
@@ -101,6 +104,10 @@ def downloadItem(params):
   url = params['url']
   url = urllib.unquote_plus(url)
   
+  if(addon.getSetting('download_path')==''):
+    message(addon.getLocalizedString(30001), addon.getLocalizedString(30009))
+    return False
+  
   dest = os.path.join(addon.getSetting('download_path'), ntpath.basename(url))
   
   try: 
@@ -108,9 +115,11 @@ def downloadItem(params):
   except Exception as inst:
     addon_log(inst)
 
-def listProgram():
+def downloadProgram(d=None):
   url = 'http://www.eteatru.ro/program.htm'
-  
+  if(d!=None):
+    url = url + '?d='+d
+   
   temp = os.path.join(addon.getAddonInfo('path'),"program.htm")
   
   try: 
@@ -122,22 +131,42 @@ def listProgram():
   except Exception as inst:
     programTxt = ""
   
-  #programTxt = '["page","program",]'
-  
   programTxt = cleanJson(programTxt)
-  
-  addon_log(programTxt)
+  #addon_log(programTxt)
   
   try:
     program = json.loads(programTxt, encoding='iso-8859-2')
+    return program
   except Exception as inst:
     addon_log(inst)
     return False
+
+def listProgram():
+  program = downloadProgram()
   
+  for item in program:
+    if(item[0]=='week'):
+      name = item[6]+' '+item[7]
+      name = name.encode('utf8')
+      addDir(name, 4, [{'name':'d', 'value':item[5]}])
   
+  xbmc.executebuiltin("Container.SetViewMode(51)")
   
+def listProgramDay(params):
+  program = downloadProgram(params['d'])
   
-  addon_log(program)
+  for item in program:
+    if(item[0]=='program'):
+      name = item[3]+' '+item[4]
+      pars = HTMLParser.HTMLParser()
+      name = pars.unescape(name)
+      name = name.encode('utf8')
+      comment = item[5]
+      comment = pars.unescape(comment)
+      comment = comment.encode('utf8')
+      listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
+      listitem.setInfo('music', {'Title': name, 'Comment':comment})
+      xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=None, listitem=listitem, isFolder=False)
   
   xbmc.executebuiltin("Container.SetViewMode(51)")
   
@@ -160,7 +189,7 @@ elif mode==2:
   downloadItem(params)
 elif mode==3:
   listProgram()
-#elif mode==3:
-#  pass
+elif mode==4:
+  listProgramDay(params)
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

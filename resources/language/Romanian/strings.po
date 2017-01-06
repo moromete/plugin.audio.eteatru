@@ -42,3 +42,15 @@ msgstr ""
 msgctxt "#30006"
 msgid "Program"
 msgstr ""
+
+msgctxt "#30007"
+msgid "Descarca program"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Salvate"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Alegeti din setarile addon-ului calea pentru a salva fisierele!"
+msgstr ""
