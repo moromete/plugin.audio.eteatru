@@ -72,6 +72,7 @@ def addDir(name, mode):
 
 def catList():
   addDir(addon.getLocalizedString(30005), 1)
+  addDir(addon.getLocalizedString(30006), 1)
   #addDir('Favorites', 3)
     
   xbmc.executebuiltin("Container.SetViewMode(51)")

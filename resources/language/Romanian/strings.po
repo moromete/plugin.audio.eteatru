@@ -16,7 +16,7 @@ msgstr ""
 #strings 30000 thru 30999 reserved for plugins and plugin settings
 
 msgctxt "#30000"
-msgid "download current item"
+msgid "descaraca piesa curenta"
 msgstr ""
 
 msgctxt "#30001"
@@ -24,19 +24,19 @@ msgid "eteatru.ro"
 msgstr ""
 
 msgctxt "#30002"
-msgid "General"
+msgid "Generic"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Debug"
+msgid "Depanare"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Download path"
+msgid "Calea pentru descarcare"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Current playing"
+msgid "Ruleaza acum"
 msgstr ""
 
 msgctxt "#30006"
