@@ -46,7 +46,7 @@ def listCurrent():
   listitem.setInfo('music', {'Title': name, 'Comment':comment})
   u=plugin+"?mode=2"+\
            "&url="+urllib.quote_plus(url)
-  contextMenuItems = [( 'Download', "XBMC.RunPlugin("+u+")", )]
+  contextMenuItems = [( addon.getLocalizedString(30010), "XBMC.RunPlugin("+u+")", )]
   listitem.addContextMenuItems(contextMenuItems)
   
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
