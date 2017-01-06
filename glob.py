@@ -33,9 +33,12 @@ def _pbhook(numblocks, blocksize, filesize, dp=None):
     dp.close()
 
 def cleanJson(string):
+  string = re.sub("/\*[\w\W]*\*/", "", string)
+  string = re.sub("\s\/\/[\w\W]*?\n", "\n", string)
+  
   string = re.sub(",[ \t\r\n]+}", "}", string)
-  string = re.sub(",[ \t\r\n]+\]", "]", string)
-
+  string = re.sub(",[ \t\r\n]*\]", "]", string)
+  
   return string
 
 def message(title, message):

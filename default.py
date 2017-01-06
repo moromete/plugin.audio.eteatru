@@ -22,6 +22,7 @@ def listCurrent():
     playInfoTxt = ""
   
   playInfoTxt = cleanJson(playInfoTxt)
+  #addon_log(playInfoTxt)
   
   try:
     playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
@@ -37,7 +38,7 @@ def listCurrent():
     return False
   
   plugin=sys.argv[0]
-  listitem = xbmcgui.ListItem(name, iconImage="DefaultVideo.png")
+  listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
   listitem.setInfo('music', {'Title': name, 'Comment':comment})
   u=plugin+"?mode=2"+\
            "&url="+urllib.quote_plus(url)
@@ -72,7 +73,7 @@ def addDir(name, mode):
 
 def catList():
   addDir(addon.getLocalizedString(30005), 1)
-  addDir(addon.getLocalizedString(30006), 1)
+  addDir(addon.getLocalizedString(30006), 3)
   #addDir('Favorites', 3)
     
   xbmc.executebuiltin("Container.SetViewMode(51)")
@@ -107,7 +108,39 @@ def downloadItem(params):
   except Exception as inst:
     addon_log(inst)
 
-
+def listProgram():
+  url = 'http://www.eteatru.ro/program.htm'
+  
+  temp = os.path.join(addon.getAddonInfo('path'),"program.htm")
+  
+  try: 
+    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
+    f = open(temp)
+    programTxt = f.read()
+    f.close()
+    os.remove(temp)
+  except Exception as inst:
+    programTxt = ""
+  
+  #programTxt = '["page","program",]'
+  
+  programTxt = cleanJson(programTxt)
+  
+  addon_log(programTxt)
+  
+  try:
+    program = json.loads(programTxt, encoding='iso-8859-2')
+  except Exception as inst:
+    addon_log(inst)
+    return False
+  
+  
+  
+  
+  addon_log(program)
+  
+  xbmc.executebuiltin("Container.SetViewMode(51)")
+  
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
@@ -125,6 +158,8 @@ elif mode==1:
   listCurrent()
 elif mode==2:
   downloadItem(params)
+elif mode==3:
+  listProgram()
 #elif mode==3:
 #  pass
 

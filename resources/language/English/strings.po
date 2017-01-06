@@ -42,3 +42,7 @@ msgstr ""
 msgctxt "#30006"
 msgid "Program"
 msgstr ""
+
+msgctxt "#30007"
+msgid "download program"
+msgstr ""
