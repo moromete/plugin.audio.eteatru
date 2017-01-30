@@ -39,7 +39,7 @@ def cleanJson(string):
   string = re.sub(",[ \t\r\n]+}", "}", string)
   string = re.sub(",[ \t\r\n]*\]", "]", string)
   
-  string = re.sub("\\\\", "", string)
+  string = re.sub("\\\\'", "'", string)
   
   return string
 

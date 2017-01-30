@@ -133,7 +133,7 @@ def downloadProgram(d=None):
     programTxt = ""
   
   programTxt = cleanJson(programTxt)
-  #addon_log(programTxt)
+  addon_log(programTxt)
   
   try:
     program = json.loads(programTxt, encoding='iso-8859-2')
