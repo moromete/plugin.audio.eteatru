@@ -10,4 +10,3 @@ v 0.0.2
   1. add download possibility
 v 0.0.1
   1. play current item
->>>>>>> 9c2c126c4fb4c0439be9fd942431ec9b2e67f51a
