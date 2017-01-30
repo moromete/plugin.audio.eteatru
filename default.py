@@ -19,11 +19,12 @@ def listCurrent():
     f.close()
     os.remove(temp)
   except Exception as inst:
+    addon_log(inst)
     playInfoTxt = ""
   
   playInfoTxt = cleanJson(playInfoTxt)
   #addon_log(playInfoTxt)
-  
+    
   try:
     playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
     name = playInfo[0][1]
