@@ -16,7 +16,7 @@ msgstr ""
 #strings 30000 thru 30999 reserved for plugins and plugin settings
 
 msgctxt "#30000"
-msgid "download current item"
+msgid "Download current item"
 msgstr ""
 
 msgctxt "#30001"
@@ -36,7 +36,7 @@ msgid "Download path"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Current playing"
+msgid "Playing now"
 msgstr ""
 
 msgctxt "#30006"
@@ -44,5 +44,17 @@ msgid "Program"
 msgstr ""
 
 msgctxt "#30007"
-msgid "download program"
+msgid "Download program guide"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Downloads"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Set download path from addon setting in order to be able to download!"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Download"
 msgstr ""
