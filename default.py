@@ -46,7 +46,9 @@ def listCurrent():
   listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
   listitem.setInfo('music', {'Title': name, 'Comment':comment})
   u=plugin+"?mode=2"+\
-           "&url="+urllib.quote_plus(url)
+           "&url="+urllib.quote_plus(url)+\
+           '&title='+urllib.quote_plus(name)+\
+           '&comment='+urllib.quote_plus(comment)
   contextMenuItems = [( addon.getLocalizedString(30010), "XBMC.RunPlugin("+u+")", )]
   listitem.addContextMenuItems(contextMenuItems)
   
@@ -104,7 +106,7 @@ def getParams():
 def downloadItem(params):
   url = params['url']
   url = urllib.unquote_plus(url)
-  
+    
   if(addon.getSetting('download_path')==''):
     message(addon.getLocalizedString(30001), addon.getLocalizedString(30009))
     return False
@@ -113,8 +115,25 @@ def downloadItem(params):
   
   try: 
     Downloader(url, dest, addon.getLocalizedString(30000), addon.getLocalizedString(30001))
+    pass
   except Exception as inst:
     addon_log(inst)
+    
+  #addon_log(params)
+  #ADD ID3
+  from mutagen.id3 import ID3NoHeaderError, ID3, TIT2, COMM, TCON
+  title = params['title']
+  title = urllib.unquote_plus(title)
+  comment = params['comment']
+  comment = urllib.unquote_plus(comment)
+  try: 
+    tags = ID3(dest)
+  except ID3NoHeaderError:
+    tags = ID3()
+  tags['TIT2'] = TIT2( encoding=3, text=title.decode('utf8') )
+  tags['COMM'] = COMM( encoding=3, desc='', text=comment.decode('utf8') )
+  tags['TCON'] = TCON( encoding=3, text=u'teatru')
+  tags.save(dest)
 
 def downloadProgram(d=None):
   url = 'http://www.eteatru.ro/program.htm'

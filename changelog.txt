@@ -1,5 +1,6 @@
 v 0.0.5
   1. fix json - clean special escaped chars ( e.g. \' ===> ' )
+  2. mark with ID3 downloaded files
 v 0.0.4
   1. fix Romanian translations
 v 0.0.3
