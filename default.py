@@ -5,7 +5,7 @@ import json, re
 import ntpath
 import HTMLParser
 
-from glob import addon_log, addon, Downloader, cleanJson, message
+from common import addon_log, addon, Downloader, cleanJson, message
 from player import player
 
 def listCurrent():
@@ -120,6 +120,8 @@ def downloadItem(params):
     pass
   except Exception as inst:
     addon_log(inst)
+    xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % (addon.getLocalizedString(30011), url, 10000, "DefaultIconError.png"))
+    return False
     
   #addon_log(params)
   #ADD ID3

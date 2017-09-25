@@ -60,5 +60,9 @@ msgid "Download"
 msgstr ""
 
 msgctxt "#30011"
+<<<<<<< HEAD
 msgid "Collections"
+=======
+msgid "Erorr downloading file"
+>>>>>>> 690860876eaa3f9131003114ad0f9c14883ba128
 msgstr ""
