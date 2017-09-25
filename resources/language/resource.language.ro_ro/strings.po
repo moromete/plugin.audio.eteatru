@@ -61,3 +61,7 @@ msgstr "Alegeti din setarile addon-ului calea pentru a salva fisierele!"
 msgctxt "#30010"
 msgid "Download"
 msgstr "Salveaza"
+
+msgctxt "#30011"
+msgid "Collections"
+msgstr "Colectii"

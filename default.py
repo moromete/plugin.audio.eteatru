@@ -82,6 +82,8 @@ def catList():
     liz = xbmcgui.ListItem(addon.getLocalizedString(30008), iconImage="DefaultFolder.png")
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=addon.getSetting('download_path'), listitem=liz, isFolder=True)
     
+  addDir(addon.getLocalizedString(30011), 5)
+    
   xbmc.executebuiltin("Container.SetViewMode(51)")
 
 def getParams():
@@ -190,6 +192,32 @@ def listProgramDay(params):
   
   xbmc.executebuiltin("Container.SetViewMode(51)")
   
+def listCollections():
+  url = 'http://www.eteatru.ro/art-index.htm?c=3491'
+  try: 
+    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
+    f = open(temp)
+    collectionsTxt = f.read()
+    f.close()
+    os.remove(temp)
+  except Exception as inst:
+    collectionsTxt = ""
+  
+  collectionsTxt = cleanJson(collectionsTxt)
+  addon_log(collectionsTxt)
+  
+  try:
+    program = json.loads(programTxt, encoding='iso-8859-2')
+  except Exception as inst:
+    addon_log(inst)
+  
+  for item in program:
+    if(item[0]=='subcategory'):
+      name = item[3]
+      name = name.encode('utf8')
+      addDir(name, 6, [{'name':'d', 'value':item[2]}])
+  
+  
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
@@ -211,5 +239,7 @@ elif mode==3:
   listProgram()
 elif mode==4:
   listProgramDay(params)
+elif mode==5:
+  listCollections()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
