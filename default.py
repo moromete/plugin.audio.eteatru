@@ -6,7 +6,6 @@ import ntpath
 import HTMLParser
 
 from common import addon_log, addon, Downloader, cleanJson, message
-from player import player
 
 def listCurrent():
   url = 'http://www.eteatru.ro/play.htm'
@@ -60,10 +59,6 @@ def addItem(url, name, comment):
   listitem.addContextMenuItems(contextMenuItems)
   
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
-  
-#def playCurrent(params):
-#  p = player(xbmc.PLAYER_CORE_AUTO, offset=int(playInfo[0][6]))
-#  p.play(playInfo[0][3], listitem)
   
 def addDir(name, mode, params=None, descr="", img=None):
   contextMenuItems = []
