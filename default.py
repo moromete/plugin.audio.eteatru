@@ -24,7 +24,7 @@ def listCurrent():
     playInfoTxt = ""
   
   playInfoTxt = cleanJson(playInfoTxt)
-  #addon_log(playInfoTxt)
+  addon_log(playInfoTxt)
     
   try:
     playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
@@ -34,7 +34,9 @@ def listCurrent():
     name = name.encode('utf8')
     comment = playInfo[0][2]
     comment = pars.unescape(comment)
-    comment = re.sub('<[^<]+?>', '', comment)
+    tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+    comment = tag_re.sub('', comment)
+    #comment = re.sub('<[^<]+?>', '', comment)
     comment = comment.encode('utf8')
     url = playInfo[0][3]
     offset = playInfo[0][6]
@@ -42,9 +44,14 @@ def listCurrent():
     addon_log(inst)
     return False
   
+  addItem(url, name, comment)
+  #xbmc.executebuiltin("Container.SetViewMode(51)")
+  
+def addItem(url, name, comment):
   plugin=sys.argv[0]
   listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
-  listitem.setInfo('music', {'Title': name, 'Comment':comment})
+  #listitem.setInfo('music', {'Title': name, 'Comment':comment})
+  listitem.setInfo( type="video", infoLabels={ "title": name, 'plot':comment })
   u=plugin+"?mode=2"+\
            "&url="+urllib.quote_plus(url)+\
            '&title='+urllib.quote_plus(name)+\
@@ -53,13 +60,12 @@ def listCurrent():
   listitem.addContextMenuItems(contextMenuItems)
   
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
-  xbmc.executebuiltin("Container.SetViewMode(51)")
   
 #def playCurrent(params):
 #  p = player(xbmc.PLAYER_CORE_AUTO, offset=int(playInfo[0][6]))
 #  p.play(playInfo[0][3], listitem)
   
-def addDir(name, mode, params=None):
+def addDir(name, mode, params=None, descr="", img=None):
   contextMenuItems = []
 
   plugin=sys.argv[0]
@@ -69,8 +75,11 @@ def addDir(name, mode, params=None):
     for param in params:
       u = u + '&' + param['name'] + '=' + param['value']  
     
-  liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png")
-  liz.setInfo( type="Audio", infoLabels={ "Title": name })
+  if(img == None):
+    img = "DefaultFolder.png"
+  liz = xbmcgui.ListItem(name,
+                         iconImage=img)
+  liz.setInfo( type="video", infoLabels={ "title": name, 'plot':descr })
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
 
 def catList():
@@ -196,6 +205,7 @@ def listProgramDay(params):
   
 def listCollections():
   url = 'http://www.eteatru.ro/art-index.htm?c=3491'
+  temp = os.path.join(addon.getAddonInfo('path'),"collections.json")
   try: 
     Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
     f = open(temp)
@@ -203,23 +213,76 @@ def listCollections():
     f.close()
     os.remove(temp)
   except Exception as inst:
+    addon_log(inst)
     collectionsTxt = ""
   
   collectionsTxt = cleanJson(collectionsTxt)
-  addon_log(collectionsTxt)
-  
+  #addon_log(collectionsTxt)
+    
+  program = [];
   try:
-    program = json.loads(programTxt, encoding='iso-8859-2')
+    program = json.loads(collectionsTxt, encoding='iso-8859-2')
   except Exception as inst:
     addon_log(inst)
   
+  pars = HTMLParser.HTMLParser()
+  tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
   for item in program:
     if(item[0]=='subcategory'):
       name = item[3]
+      name = pars.unescape(name)
       name = name.encode('utf8')
-      addDir(name, 6, [{'name':'d', 'value':item[2]}])
+      
+      descr = item[4]
+      descr = pars.unescape(descr)
+      descr = tag_re.sub('', descr)
+      
+      img = 'http://static.srr.ro/images/categories/'+item[8]
+      
+      addDir(name, 6, [{'name':'artId', 'value':item[1]}], descr, img)
+      
+def listCollectionItems(params):
+  url = 'http://www.eteatru.ro/art-index.htm?c='+params['artId']
+  temp = os.path.join(addon.getAddonInfo('path'),"collectionItem.json")
+  try: 
+    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
+    f = open(temp)
+    collectionItems = f.read()
+    f.close()
+    os.remove(temp)
+  except Exception as inst:
+    addon_log(inst)
+    collectionItems = ""
   
+  collectionItems = cleanJson(collectionItems)
+  #addon_log(collectionItems)
+    
+  program = [];
+  try:
+    program = json.loads(collectionItems, encoding='iso-8859-2')
+  except Exception as inst:
+    addon_log(inst)
+    
+  #addon_log(program)
   
+  pars = HTMLParser.HTMLParser()
+  tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+  for item in program:
+    if(item[0]=='articles' and item[10] != ''):
+      name = item[4]
+      name = pars.unescape(name)
+      name = name.encode('utf8')
+      
+      descr = item[6]
+      descr = pars.unescape(descr)
+      descr = tag_re.sub('', descr)
+      descr = descr.encode('utf8')
+
+      url = "http://static.srr.ro/audio/articles/"+params['artId']+"/"+item[10]
+      addon_log(url)
+      
+      addItem(url, name, descr)
+
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
@@ -243,5 +306,7 @@ elif mode==4:
   listProgramDay(params)
 elif mode==5:
   listCollections()
+elif mode==6:
+  listCollectionItems(params)
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
