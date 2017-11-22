@@ -1,6 +1,6 @@
 import xbmc
 
-from glob import addon_log, addon
+from common import addon_log, addon
 
 class player(xbmc.Player):
   def __init__( self , *args, **kwargs):
