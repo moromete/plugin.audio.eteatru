@@ -1,5 +1,5 @@
 import xbmc, xbmcgui, xbmcaddon
-import urllib, urllib2
+import urllib.request
 import os, stat
 import re
 
@@ -9,17 +9,16 @@ def addon_log(string):
   DEBUG = addon.getSetting('debug')
   ADDON_VERSION = addon.getAddonInfo('version')
   if DEBUG == 'true':
-    if isinstance(string, unicode):
-      string = string.encode('utf-8')
+    # if isinstance(string, unicode):
+    #   string = string.encode('utf-8')
     xbmc.log("[plugin.audio.eteatru-%s]: %s" %(ADDON_VERSION, string))
 
 
 def Downloader(url,dest,description,heading):
   dp = xbmcgui.DialogProgress()
-  dp.create(heading,description,url)
+  dp.create(heading, description)
   dp.update(0)
-
-  urllib.urlretrieve(url,dest,lambda nb, bs, fs, url=url: _pbhook(nb,bs,fs,dp))
+  urllib.request.urlretrieve(url,dest,lambda nb, bs, fs, url=url: _pbhook(nb,bs,fs,dp))
   
 def _pbhook(numblocks, blocksize, filesize, dp=None):
   try:

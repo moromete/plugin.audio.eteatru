@@ -1,34 +1,36 @@
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
-import urllib
-import os, os.path
+import urllib.request
+import urllib.parse
+import sys, os, os.path
 import json, re
 import ntpath
-import HTMLParser
+from html.parser import HTMLParser
 
 from common import addon_log, addon, Downloader, cleanJson, message
 
+headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Encoding': 'identity',
+    'Accept-Language': 'en-US,en;q=0.5', 
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0'
+  }
+opener = urllib.request.build_opener()
+
 def listCurrent():
   url = 'http://www.eteatru.ro/play.htm'
-  
-  temp = os.path.join(addon.getAddonInfo('path'),"play.htm")
-  
-  try: 
-    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30001))
-    f = open(temp)
-    playInfoTxt = f.read()
-    f.close()
-    os.remove(temp)
-  except Exception as inst:
-    addon_log(inst)
-    playInfoTxt = ""
-  
+  request = urllib.request.Request(url, None, headers)
+  response = opener.open(request)
+  playInfoTxt = response.read()
+  playInfoTxt =  playInfoTxt.decode('iso-8859-2')
   playInfoTxt = cleanJson(playInfoTxt)
   addon_log(playInfoTxt)
     
   try:
     playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
     name = playInfo[0][1]
-    pars = HTMLParser.HTMLParser()
+    pars = HTMLParser()
     name = pars.unescape(name)
     name = name.encode('utf8')
     comment = playInfo[0][2]
@@ -38,31 +40,28 @@ def listCurrent():
     #comment = re.sub('<[^<]+?>', '', comment)
     comment = comment.encode('utf8')
     url = playInfo[0][3]
-    offset = playInfo[0][6]
+    # offset = playInfo[0][6]
   except Exception as inst:
     addon_log(inst)
     return False
-  
   addItem(url, name, comment)
-  #xbmc.executebuiltin("Container.SetViewMode(51)")
   
 def addItem(url, name, comment):
   plugin=sys.argv[0]
-  listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
+  listitem = xbmcgui.ListItem(name)
+  listitem.setArt({'icon': "DefaultAudio.png"})
   #listitem.setInfo('music', {'Title': name, 'Comment':comment})
   listitem.setInfo( type="video", infoLabels={ "title": name, 'plot':comment })
   u=plugin+"?mode=2"+\
-           "&url="+urllib.quote_plus(url)+\
-           '&title='+urllib.quote_plus(name)+\
-           '&comment='+urllib.quote_plus(comment)
-  contextMenuItems = [( addon.getLocalizedString(30010), "XBMC.RunPlugin("+u+")", )]
+           "&url="+urllib.parse.quote_plus(url)+\
+           '&title='+urllib.parse.quote_plus(name)+\
+           '&comment='+urllib.parse.quote_plus(comment)
+  contextMenuItems = [( addon.getLocalizedString(30010), "RunPlugin("+u+")", )]
   listitem.addContextMenuItems(contextMenuItems)
   
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
   
 def addDir(name, mode, params=None, descr="", img=None):
-  contextMenuItems = []
-
   plugin=sys.argv[0]
 
   u = plugin+"?"+"mode="+str(mode)
@@ -72,8 +71,8 @@ def addDir(name, mode, params=None, descr="", img=None):
     
   if(img == None):
     img = "DefaultFolder.png"
-  liz = xbmcgui.ListItem(name,
-                         iconImage=img)
+  liz = xbmcgui.ListItem(name)
+  liz.setArt({'icon': img})
   liz.setInfo( type="video", infoLabels={ "title": name, 'plot':descr })
   xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
 
@@ -83,7 +82,8 @@ def catList():
   
   #Downloads
   if(addon.getSetting('download_path')!=''):
-    liz = xbmcgui.ListItem(addon.getLocalizedString(30008), iconImage="DefaultFolder.png")
+    liz = xbmcgui.ListItem(addon.getLocalizedString(30008))
+    liz.setArt({'icon': "DefaultFolder.png"})
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=addon.getSetting('download_path'), listitem=liz, isFolder=True)
     
   addDir(addon.getLocalizedString(30011), 5)
@@ -110,8 +110,9 @@ def getParams():
   return param
 
 def downloadItem(params):
+  addon_log(params)
   url = params['url']
-  url = urllib.unquote_plus(url)
+  url = urllib.parse.unquote_plus(url)
     
   if(addon.getSetting('download_path')==''):
     message(addon.getLocalizedString(30001), addon.getLocalizedString(30009))
@@ -131,15 +132,15 @@ def downloadItem(params):
   #ADD ID3
   from mutagen.id3 import ID3NoHeaderError, ID3, TIT2, COMM, TCON
   title = params['title']
-  title = urllib.unquote_plus(title)
+  title = urllib.parse.unquote_plus(title)
   comment = params['comment']
-  comment = urllib.unquote_plus(comment)
+  comment = urllib.parse.unquote_plus(comment)
   try: 
     tags = ID3(dest)
   except ID3NoHeaderError:
     tags = ID3()
-  tags['TIT2'] = TIT2( encoding=3, text=title.decode('utf8') )
-  tags['COMM'] = COMM( encoding=3, desc='', text=comment.decode('utf8') )
+  tags['TIT2'] = TIT2( encoding=3, text=title )
+  tags['COMM'] = COMM( encoding=3, desc='', text=comment )
   tags['TCON'] = TCON( encoding=3, text=u'teatru')
   tags.save(dest)
 
@@ -147,18 +148,10 @@ def downloadProgram(d=None):
   url = 'http://www.eteatru.ro/program.htm'
   if(d!=None):
     url = url + '?d='+d
-   
-  temp = os.path.join(addon.getAddonInfo('path'),"program.htm")
-  
-  try: 
-    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
-    f = open(temp)
-    programTxt = f.read()
-    f.close()
-    os.remove(temp)
-  except Exception as inst:
-    programTxt = ""
-  
+  request = urllib.request.Request(url, None, headers)
+  response = opener.open(request)
+  programTxt = response.read()
+  programTxt =  programTxt.decode('iso-8859-2')
   programTxt = cleanJson(programTxt)
   addon_log(programTxt)
   
@@ -171,14 +164,13 @@ def downloadProgram(d=None):
 
 def listProgram():
   program = downloadProgram()
-  
-  for item in program:
-    if(item[0]=='week'):
-      name = item[6]+' '+item[7]
-      name = name.encode('utf8')
-      addDir(name, 4, [{'name':'d', 'value':item[5]}])
-  
-  xbmc.executebuiltin("Container.SetViewMode(51)")
+  # addon_log(program)
+  if(program != False): 
+    for item in program:
+      if(item[0]=='week' and item[4] == "1"):
+        name = item[6]+' '+item[7]
+        # name = name.encode('utf8')
+        addDir(name, 4, [{'name':'d', 'value':item[5]}])
   
 def listProgramDay(params):
   program = downloadProgram(params['d'])
@@ -186,13 +178,14 @@ def listProgramDay(params):
   for item in program:
     if(item[0]=='program'):
       name = item[3]+' '+item[4]
-      pars = HTMLParser.HTMLParser()
+      pars = HTMLParser()
       name = pars.unescape(name)
       name = name.encode('utf8')
       comment = item[5]
       comment = pars.unescape(comment)
       comment = comment.encode('utf8')
-      listitem = xbmcgui.ListItem(name, iconImage="DefaultAudio.png")
+      listitem = xbmcgui.ListItem(name)
+      listitem.setArt({'icon': "DefaultAudio.png"})
       listitem.setInfo('music', {'Title': name, 'Comment':comment})
       xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=None, listitem=listitem, isFolder=False)
   
@@ -200,27 +193,20 @@ def listProgramDay(params):
   
 def listCollections():
   url = 'http://www.eteatru.ro/art-index.htm?c=3491'
-  temp = os.path.join(addon.getAddonInfo('path'),"collections.json")
-  try: 
-    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
-    f = open(temp)
-    collectionsTxt = f.read()
-    f.close()
-    os.remove(temp)
-  except Exception as inst:
-    addon_log(inst)
-    collectionsTxt = ""
-  
+  request = urllib.request.Request(url, None, headers)
+  response = opener.open(request)
+  collectionsTxt = response.read()
+  collectionsTxt =  collectionsTxt.decode('utf-8', "ignore")
   collectionsTxt = cleanJson(collectionsTxt)
   #addon_log(collectionsTxt)
     
-  program = [];
+  program = []
   try:
     program = json.loads(collectionsTxt, encoding='iso-8859-2')
   except Exception as inst:
     addon_log(inst)
   
-  pars = HTMLParser.HTMLParser()
+  pars = HTMLParser()
   tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
   for item in program:
     if(item[0]=='subcategory'):
@@ -238,21 +224,14 @@ def listCollections():
       
 def listCollectionItems(params):
   url = 'http://www.eteatru.ro/art-index.htm?c='+params['artId']
-  temp = os.path.join(addon.getAddonInfo('path'),"collectionItem.json")
-  try: 
-    Downloader(url, temp, addon.getLocalizedString(30000), addon.getLocalizedString(30007))
-    f = open(temp)
-    collectionItems = f.read()
-    f.close()
-    os.remove(temp)
-  except Exception as inst:
-    addon_log(inst)
-    collectionItems = ""
-  
+  request = urllib.request.Request(url, None, headers)
+  response = opener.open(request)
+  collectionItems = response.read()
+  collectionItems = collectionItems.decode('iso-8859-2')
   collectionItems = cleanJson(collectionItems)
   #addon_log(collectionItems)
     
-  program = [];
+  program = []
   try:
     program = json.loads(collectionItems, encoding='iso-8859-2')
   except Exception as inst:
@@ -260,7 +239,7 @@ def listCollectionItems(params):
     
   #addon_log(program)
   
-  pars = HTMLParser.HTMLParser()
+  pars = HTMLParser()
   tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
   for item in program:
     if(item[0]=='articles' and item[10] != ''):
