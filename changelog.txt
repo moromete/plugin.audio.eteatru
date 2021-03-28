@@ -1,3 +1,5 @@
+v 1.1.1
+  1. fix utf-8 encoding issues
 v 1.1.0
   1. migrate to python 3 for kodi 19
 v 1.0.0
