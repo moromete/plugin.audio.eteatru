@@ -180,10 +180,10 @@ def listProgramDay(params):
       name = item[3]+' '+item[4]
       pars = HTMLParser()
       name = pars.unescape(name)
-      name = name.encode('utf8')
+      # name = name.encode('utf8')
       comment = item[5]
       comment = pars.unescape(comment)
-      comment = comment.encode('utf8')
+      # comment = comment.encode('utf8')
       listitem = xbmcgui.ListItem(name)
       listitem.setArt({'icon': "DefaultAudio.png"})
       listitem.setInfo('music', {'Title': name, 'Comment':comment})
@@ -196,7 +196,7 @@ def listCollections():
   request = urllib.request.Request(url, None, headers)
   response = opener.open(request)
   collectionsTxt = response.read()
-  collectionsTxt =  collectionsTxt.decode('utf-8', "ignore")
+  collectionsTxt =  collectionsTxt.decode('iso-8859-2')
   collectionsTxt = cleanJson(collectionsTxt)
   #addon_log(collectionsTxt)
     
@@ -212,7 +212,7 @@ def listCollections():
     if(item[0]=='subcategory'):
       name = item[3]
       name = pars.unescape(name)
-      name = name.encode('utf8')
+      # name = name.encode('utf8')
       
       descr = item[4]
       descr = pars.unescape(descr)
@@ -245,12 +245,12 @@ def listCollectionItems(params):
     if(item[0]=='articles' and item[10] != ''):
       name = item[4]
       name = pars.unescape(name)
-      name = name.encode('utf8')
+      # name = name.encode('utf8')
       
       descr = item[6]
       descr = pars.unescape(descr)
       descr = tag_re.sub('', descr)
-      descr = descr.encode('utf8')
+      # descr = descr.encode('utf8')
 
       url = "http://static.srr.ro/audio/articles/"+params['artId']+"/"+item[10]
       addon_log(url)
