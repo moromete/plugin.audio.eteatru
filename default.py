@@ -1,10 +1,11 @@
-import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import xbmc, xbmcgui, xbmcplugin
 import urllib.request
 import urllib.parse
 import sys, os, os.path
 import json, re
 import ntpath
-from html.parser import HTMLParser
+# from html.parser import HTMLParser
+import html
 
 from common import addon_log, addon, Downloader, cleanJson, message
 
@@ -28,13 +29,15 @@ def listCurrent():
   addon_log(playInfoTxt)
     
   try:
-    playInfo = json.loads(playInfoTxt, encoding='iso-8859-2')
+    playInfo = json.loads(playInfoTxt)
     name = playInfo[0][1]
-    pars = HTMLParser()
-    name = pars.unescape(name)
+    # pars = HTMLParser()
+    # name = pars.unescape(name)
+    name = html.unescape(name)
     name = name.encode('utf8')
     comment = playInfo[0][2]
-    comment = pars.unescape(comment)
+    # comment = pars.unescape(comment)
+    comment = html.unescape(comment)
     tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
     comment = tag_re.sub('', comment)
     #comment = re.sub('<[^<]+?>', '', comment)
@@ -156,7 +159,7 @@ def downloadProgram(d=None):
   addon_log(programTxt)
   
   try:
-    program = json.loads(programTxt, encoding='iso-8859-2')
+    program = json.loads(programTxt)
     return program
   except Exception as inst:
     addon_log(inst)
@@ -178,11 +181,11 @@ def listProgramDay(params):
   for item in program:
     if(item[0]=='program'):
       name = item[3]+' '+item[4]
-      pars = HTMLParser()
-      name = pars.unescape(name)
+      #   pars = HTMLParser()
+      name = html.unescape(name)
       # name = name.encode('utf8')
       comment = item[5]
-      comment = pars.unescape(comment)
+      comment = html.unescape(comment)
       # comment = comment.encode('utf8')
       listitem = xbmcgui.ListItem(name)
       listitem.setArt({'icon': "DefaultAudio.png"})
@@ -202,20 +205,20 @@ def listCollections():
     
   program = []
   try:
-    program = json.loads(collectionsTxt, encoding='iso-8859-2')
+    program = json.loads(collectionsTxt)
   except Exception as inst:
     addon_log(inst)
   
-  pars = HTMLParser()
+  #   pars = HTMLParser()
   tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
   for item in program:
     if(item[0]=='subcategory'):
       name = item[3]
-      name = pars.unescape(name)
+      name = html.unescape(name)
       # name = name.encode('utf8')
       
       descr = item[4]
-      descr = pars.unescape(descr)
+      descr = html.unescape(descr)
       descr = tag_re.sub('', descr)
       
       img = 'http://static.srr.ro/images/categories/'+item[8]
@@ -233,22 +236,22 @@ def listCollectionItems(params):
     
   program = []
   try:
-    program = json.loads(collectionItems, encoding='iso-8859-2')
+    program = json.loads(collectionItems)
   except Exception as inst:
     addon_log(inst)
     
   #addon_log(program)
   
-  pars = HTMLParser()
+  #   pars = HTMLParser()
   tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
   for item in program:
     if(item[0]=='articles' and item[10] != ''):
       name = item[4]
-      name = pars.unescape(name)
+      name = html.unescape(name)
       # name = name.encode('utf8')
       
       descr = item[6]
-      descr = pars.unescape(descr)
+      descr = html.unescape(descr)
       descr = tag_re.sub('', descr)
       # descr = descr.encode('utf8')
 
